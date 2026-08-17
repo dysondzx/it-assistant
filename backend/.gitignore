@@ -1,0 +1,27 @@
+# 字节码缓存
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+
+# 虚拟环境（重点：区分不同工具的命名）
+aenv/
+.aenv/
+.env
+.env.*
+!.env.example
+.Python
+
+# 打包 / 构建产物
+build/
+dist/
+*.egg-info/
+.eggs/
+whegs/
+
+# 其它
+*.db
+*.sqlite3
+*.faiss
+*.pkl
+*.log
