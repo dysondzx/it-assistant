@@ -1,0 +1,57 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: agentic-rag-backend:latest
+    container_name: agentic-rag-backend
+    restart: unless-stopped
+
+    ports:
+      - "127.0.0.1:8000:8000"
+
+    # 环境变量（从 backend/.env 读取）
+    env_file:
+      - ./backend/.env
+
+    # 数据持久化卷
+    volumes:
+      - rag-data:/app/data
+
+    # 健康检查
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+    # 资源限制（防止单容器吃满主机资源）
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 4G
+        reservations:
+          cpus: "0.5"
+          memory: 1G
+
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+    # 网络隔离
+    networks:
+      - rag-internal
+
+# 持久化卷
+volumes:
+  rag-data:
+    driver: local
+
+# 网络
+networks:
+  rag-internal:
+    driver: bridge
