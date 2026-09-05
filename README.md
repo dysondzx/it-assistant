@@ -43,7 +43,7 @@
     docker compose up -d --build
     # 仅 backend，前端用 npm run dev + Vite proxy
 
-### 4.2 生产（带 Nginx 反向代理）
+### 2.2 生产（带 Nginx 反向代理）
 
     docker compose --profile prod up -d --build
 
@@ -80,7 +80,7 @@
     python -m app.evaluation.run_eval --metrics faithfulness,answer_relevancy # 核心两项
     python -m app.evaluation.run_eval --limit 3  # 前 3 条
 
-### 6.3 HTTP API
+### 4.3 HTTP API
 
     # 健康检查
     GET /api/eval/health
