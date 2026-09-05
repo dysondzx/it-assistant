@@ -4,6 +4,7 @@ import os
 from app.config import settings
 from openai import OpenAI
 import json
+from pathlib import Path
 
 def build_knowledge_graph() -> nx.DiGraph:
     sys_prompt = """
@@ -21,7 +22,8 @@ def build_knowledge_graph() -> nx.DiGraph:
         api_key=settings.DEEPSEEK_API_KEY,
         base_url=settings.DEEPSEEK_BASE_URL,
     )
-    with open("../docs/billing.md", 'r', encoding='utf-8') as f:
+    DOCS_DIR = Path(__file__).resolve().parent.parent / "docs"
+    with open(DOCS_DIR / "billing.md", 'r', encoding='utf-8') as f:
         content = f.read()
 
     response = client.chat.completions.create(

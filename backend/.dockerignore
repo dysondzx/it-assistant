@@ -1,9 +1,39 @@
+# Python
 __pycache__/
-*.pyc
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+
+# Virtual env
 .venv/
-.env
+venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+
+# Git
+.git/
+.gitignore
+
+# 本地数据（容器内不打包，运行时由 rag-data 卷挂载到 /data）
 *.db
 *.pkl
-faiss_*
-.git/
-data/
+faiss_it_manual/
+
+# 密钥不进镜像（运行时通过 env_file / environment 注入）
+.env
+.env.local
+
+# Docker 自身（compose 文件保留在构建上下文内，不做排除）
+Dockerfile
+.dockerignore
+
+# 评估脚本：容器镜像无需打包（评估在运行中的容器内执行）
+# 如需镜像内也带评估能力，可删除下面两行
+# app/evaluation/

@@ -32,4 +32,4 @@ def build_agent():
     ).with_config({"recursion_limit": 12})
 
     logger.info("IT 助手 Agent 构建完成（三引擎：Vector RAG + Text2SQL + GraphRAG）")
-    return agent.with_config({"checkpointer": checkpointer}) if checkpointer else agent
+    return agent.with_config({"checkpointer": checkpointer})

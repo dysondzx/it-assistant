@@ -6,6 +6,7 @@ from app.data.kg import get_or_build_kg
 from app.logging_setup import logger
 import os
 from dotenv import load_dotenv
+from app.evaluation.api import router as eval_router
 
 load_dotenv()
 
@@ -32,6 +33,7 @@ app.add_middleware(
 )
 
 app.include_router(chat_router)
+app.include_router(eval_router)
 
 
 @app.get("/health")
