@@ -45,7 +45,8 @@ async def _run_task(task_id: str, dataset, metrics_config: dict):
     """后台任务：真正执行评估，并更新任务状态。"""
     try:
         _TASKS[task_id]["status"] = "running"
-        agent = build_agent()
+        # 评估无需持久化，显式不挂 checkpointer
+        agent = build_agent(checkpointer=None)
         results = await run_evaluation(agent, dataset, metrics_config)
         _TASKS[task_id].update(
             status="success",

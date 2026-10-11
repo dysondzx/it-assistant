@@ -1,10 +1,13 @@
 import type { SSEData } from "../types/chat";
 
-export async function* streamChat(message: string): AsyncGenerator<SSEData> {
+export async function* streamChat(
+  message: string,
+  sessionId: string,
+): AsyncGenerator<SSEData> {
   const resp = await fetch("/api/chat", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ message }),
+    body: JSON.stringify({ message, session_id: sessionId }),
   });
 
   if (!resp.ok || !resp.body) {

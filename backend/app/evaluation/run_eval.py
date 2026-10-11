@@ -45,7 +45,8 @@ def main():
     print(f"待评估样本数: {len(dataset)}")
     print(f"启用指标: {[k for k, v in metrics_config.items() if v]}\n")
 
-    agent = build_agent()
+    # 评估无需持久化，显式不挂 checkpointer
+    agent = build_agent(checkpointer=None)
     results = asyncio.run(run_evaluation(agent, dataset, metrics_config))
     print(f"\n完成，共 {len(results)} 条结果。")
 

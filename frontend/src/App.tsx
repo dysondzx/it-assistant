@@ -4,9 +4,22 @@ import ChatWindow from "./components/ChatWindow";
 import InputBar from "./components/InputBar";
 import { streamChat } from "./api/client";
 
+const SESSION_KEY = "it-assistant-session-id";
+
+/** 首次访问生成会话 id 并持久化，作为 LangGraph 的 thread_id */
+function getSessionId(): string {
+  let id = localStorage.getItem(SESSION_KEY);
+  if (!id) {
+    id = crypto.randomUUID();
+    localStorage.setItem(SESSION_KEY, id);
+  }
+  return id;
+}
+
 export default function App() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [loading, setLoading] = useState(false);
+  const [sessionId] = useState(getSessionId);
 
   const handleSend = async (text: string) => {
     const userMsg: ChatMessage = { role: "user", content: text };
@@ -20,7 +33,7 @@ export default function App() {
 
     let acc = "";
     try {
-      for await (const event of streamChat(text)) {
+      for await (const event of streamChat(text, sessionId)) {
         if (event.type === "message" && event.content) {
           acc += event.content;
           setMessages((prev) => {

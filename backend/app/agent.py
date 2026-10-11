@@ -1,21 +1,25 @@
 from langchain.agents import create_agent
+
 from app.core.llm import get_llm
-from app.core.checkpoint import get_checkpointer
+from app.logging_setup import logger
+from app.tools.graph_traverse import graph_traverse
 from app.tools.manual_search import it_manual_search
 from app.tools.nl2sql import sql_db_query
-from app.tools.graph_traverse import graph_traverse
-from app.logging_setup import logger
 
 
-def build_agent():
-    """构建整合了三个工具的 IT 助手 Agent"""
+def build_agent(checkpointer=None):
+    """构建整合了三个工具的 IT 助手 Agent
+
+    checkpointer: 可选。生产环境传入 AsyncPostgresSaver（见 core/checkpoint.py），
+    评估等无需持久化的场景传 None。
+    """
     llm = get_llm(temperature=0)
     tools = [it_manual_search, sql_db_query, graph_traverse]
-    checkpointer = get_checkpointer()
 
     agent = create_agent(
         model=llm,
         tools=tools,
+        checkpointer=checkpointer,
         system_prompt="""
             你是一个企业 IT 助手，可以综合运用三种检索能力：
 
@@ -32,4 +36,4 @@ def build_agent():
     ).with_config({"recursion_limit": 12})
 
     logger.info("IT 助手 Agent 构建完成（三引擎：Vector RAG + Text2SQL + GraphRAG）")
-    return agent.with_config({"checkpointer": checkpointer})
+    return agent

@@ -1,12 +1,16 @@
+import os
 from contextlib import asynccontextmanager
+
+from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
+from app.agent import build_agent
 from app.api.chat import router as chat_router
+from app.core.checkpoint import checkpointer_lifespan
 from app.data.kg import get_or_build_kg
-from app.logging_setup import logger
-import os
-from dotenv import load_dotenv
 from app.evaluation.api import router as eval_router
+from app.logging_setup import logger
 
 load_dotenv()
 
@@ -18,8 +22,12 @@ async def lifespan(app: FastAPI):
     os.environ["LANGCHAIN_PROJECT"] = os.getenv("LANGCHAIN_PROJECT", "default")
 
     get_or_build_kg()
-    logger.info("IT Assistant 后端启动完成")
-    yield
+    async with checkpointer_lifespan() as checkpointer:
+        # 挂到 app.state，供各路由通过 request.app.state 获取
+        app.state.checkpointer = checkpointer
+        app.state.agent = build_agent(checkpointer=checkpointer)
+        logger.info("IT Assistant 后端启动完成")
+        yield
     logger.info("IT Assistant 后端关闭")
 
 

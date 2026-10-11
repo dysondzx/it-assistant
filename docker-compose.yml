@@ -11,9 +11,13 @@ services:
       - SQLITE_PATH=/data/it_ops.db
       - FAISS_INDEX_PATH=/data/faiss_it_manual
       - KG_PATH=/data/it_ops_kg.pkl
+      - POSTGRES_URI=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-langgraph}
       - LANGCHAIN_TRACING_V2=${LANGCHAIN_TRACING_V2:-false}
       - LANGCHAIN_API_KEY=${LANGCHAIN_API_KEY:-}
       - LANGCHAIN_PROJECT=${LANGCHAIN_PROJECT:-rag-prod}
+    depends_on:
+      postgres:
+        condition: service_healthy
     volumes:
       # 持久化数据目录
       - rag-data:/data
@@ -26,9 +30,29 @@ services:
       retries: 3
       start_period: 20s
 
+  postgres: # LangGraph AsyncPostgresSaver 持久化存储
+    image: postgres:16-alpine
+    container_name: rag-postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB:-langgraph}
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+    networks:
+      - rag-net
+    healthcheck:
+      # $$ 转义，交由容器内 shell 展开
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
   nginx:                        # 仅 prod profile 启动时才起
     image: nginx:alpine
-    # profiles: ["prod"]
+    profiles: ["prod"]
     container_name: rag-nginx
     restart: unless-stopped
     depends_on:
@@ -45,6 +69,8 @@ services:
 
 volumes:
   rag-data:
+    driver: local
+  pg-data:
     driver: local
 
 networks:

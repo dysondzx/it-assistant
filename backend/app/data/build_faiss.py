@@ -1,3 +1,4 @@
+import os
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
 from langchain_core.documents import Document
@@ -42,6 +43,10 @@ SAMPLE_DOCS = [
 
 
 def build_faiss_index():
+    index_file = os.path.join(settings.FAISS_INDEX_PATH, "index.faiss")
+    if os.path.exists(index_file): 
+        logger.info(f"FAISS 索引已存在，跳过构建：{settings.FAISS_INDEX_PATH}")
+        return
     embeddings = HuggingFaceEmbeddings(
         model_name=settings.EMBEDDING_MODEL,
         model_kwargs={"device": "cpu"},
