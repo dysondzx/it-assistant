@@ -15,6 +15,7 @@ from app.logging_setup import logger
 _SETUP_LOCK_KEY = 20241011
 
 _checkpointer: AsyncPostgresSaver | None = None
+_pool: AsyncConnectionPool | None = None
 
 
 async def _setup_tables(pool: AsyncConnectionPool) -> None:
@@ -40,7 +41,7 @@ async def checkpointer_lifespan():
 
     在 FastAPI 的 lifespan 中进入/退出，负责建表与连接池的创建、关闭。
     """
-    global _checkpointer
+    global _checkpointer, _pool
     async with AsyncConnectionPool(
         conninfo=settings.POSTGRES_URI,      # ← 用项目的变量名，别用 DATABASE_URL
         min_size=2,
@@ -61,11 +62,13 @@ async def checkpointer_lifespan():
 
         saver = AsyncPostgresSaver(pool)     # ← 绑 pool，运行期并发安全
         _checkpointer = saver
+        _pool = pool
         logger.info("AsyncPostgresSaver 初始化完成")
         try:
             yield saver
         finally:
             _checkpointer = None
+            _pool = None
             logger.info("AsyncPostgresSaver 已关闭")
 
 
@@ -73,3 +76,10 @@ def get_checkpointer() -> AsyncPostgresSaver:
     if _checkpointer is None:
         raise RuntimeError("Checkpointer 未初始化：请在 FastAPI lifespan 中先初始化")
     return _checkpointer
+
+
+def get_pool() -> AsyncConnectionPool:
+    """供会话表等外围表复用同一个连接池（避免另起一套连接）。"""
+    if _pool is None:
+        raise RuntimeError("连接池未初始化：请在 FastAPI lifespan 中先初始化")
+    return _pool

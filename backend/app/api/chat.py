@@ -5,6 +5,7 @@ from fastapi.responses import StreamingResponse
 from langchain_core.messages import AIMessageChunk
 from pydantic import BaseModel
 
+from app.data.conversations import upsert_on_chat
 from app.logging_setup import logger
 
 router = APIRouter()
@@ -36,6 +37,12 @@ async def chat(req: ChatRequest, request: Request):
 
     async def event_stream():
         try:
+            try:
+                # 兜底写入会话表：即使前端没走"新建会话"，对话也要出现在会话列表里
+                await upsert_on_chat(req.session_id, req.message)
+            except Exception as e:
+                logger.warning(f"会话记录写入失败: {e}")
+
             async for chunk, _metadata in agent.astream(
                 {"messages": [{"role": "user", "content": req.message}]},
                 stream_mode="messages",
