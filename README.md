@@ -78,7 +78,7 @@ curl -i http://localhost/health    # 期望 200 {"status":"ok"}
 # 浏览器访问 http://localhost
 ```
 
-### 2.1 数据初始化（由容器自动完成）
+### 步骤 5：数据初始化（由容器自动完成）
 
 backend 容器启动时按顺序执行以下三步（见 `backend/Dockerfile` 的 `CMD`）：
 
@@ -88,7 +88,7 @@ python -m app.data.build_faiss    # 构建 FAISS 向量索引
 uvicorn app.main:app ...          # 启动 API 服务
 ```
 
-- 这两条初始化命令**幂等**，容器重启会重跑，不会出错。
+- 前两条初始化命令**幂等**，容器重启会重跑，不会出错。
 - 首次启动需要完成数据库与向量索引初始化，耗时较久。
 - **不要在宿主机上重复执行这两条**：`backend/.env` 中 `SQLITE_PATH`、`FAISS_INDEX_PATH`
   是相对路径，会在 `backend/` 下生成一套与容器内 `/data` 卷无关的数据。
