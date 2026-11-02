@@ -1,8 +1,8 @@
-# Agentic RAG IT 助手
+# Agentic RAG 智能知识助手
 
-基于 **LangGraph + FastAPI** 的企业 IT 运维知识助手，整合三种检索能力：
+基于 **LangGraph + FastAPI** 的智能知识助手，整合三种检索能力：
 
-- **Vector RAG**：IT 系统手册知识库（FAISS + BGE Embedding）
+- **Vector RAG**：系统手册知识库（FAISS + BGE Embedding）
 - **Text2SQL**：业务数据库精确查询（SQLite + SQL Agent）
 - **GraphRAG**：知识图谱 N 跳遍历（如：错误码 -> 系统 -> 负责人 -> 联系方式）
 
