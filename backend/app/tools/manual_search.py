@@ -39,11 +39,9 @@ def it_manual_search(query: str) -> str:
     """
     vs = _get_vector_store()
     if vs is None:
-        return "（IT 手册向量库尚未构建，请先运行 python -m app.data.build_faiss）"
+        return "IT 手册向量库尚未构建，请先运行 python -m app.data.build_faiss"
+    # 这是多租户隔离的代码，原项目中，tenant_id是由上游网关的 Token 统一解析并透传过来的
     docs = vs.similarity_search(query, k=3, filter={"tenant_id": "default_tenant"})
     if not docs:
         return "（知识库中未检索到相关内容）"
-    # 这是多租户隔离的代码，原项目中，tenant_id是由上游网关的 Token 统一解析并透传过来的
-    for doc in docs:
-        doc.metadata["tenant_id"] = "default_tenant" # 脱敏环境暂时这么写，真实环境需要替换成真实的tenant_id
     return "\n\n".join(d.page_content for d in docs)
